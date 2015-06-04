@@ -1,0 +1,23 @@
+{
+"name"          : "node-red-dnssec",
+"version"       : "0.0.1",
+"description"   : "A Node-RED node to perform dns sec queries",
+"dependencies"  : {
+  "getdns-node": "anthonykirby/getdns-node"
+},
+"repository" : {
+"type":"git",
+"url":"https://github.com/epignotti/node-red-dnssec/tree/master/"
+},
+"license": "Apache",pwd
+"keywords": [ "node-red", "dnssec", "dns" ],
+"node-red"      : {
+"nodes"     : {
+"dns-query": "dnssec-query.js"
+}
+},
+"author": {
+"name": "Edoardo Pignotti",
+"email": "edoardo.pignotti@gmail.com"
+}
+}
