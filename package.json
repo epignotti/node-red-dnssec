@@ -13,7 +13,7 @@
 "keywords": [ "node-red", "dnssec", "dns" ],
 "node-red"      : {
 "nodes"     : {
-"dns-query": "dnssec-query.js"
+"dnssec-query": "dnssec-query.js"
 }
 },
 "author": {

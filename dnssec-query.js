@@ -14,7 +14,6 @@
  * limitations under the License.
  **/
 
-
 var getdns = require('getdns');
 
 
@@ -55,7 +54,7 @@ module.exports = function (RED) {
                 var context = getdns.createContext(options);
 
 
-                var requested_name = msg.dnsQuery.name, ;
+                var requested_name = msg.dnsQuery.name;
 
                 var requested_rrtype = null;
 
@@ -64,9 +63,7 @@ module.exports = function (RED) {
                     case "URI":
                         requested_rrtype = getdns.RRTYPE_URI;
                         break;
-                        ccase
-                        "A"
-                    :
+                    case "A":
                         requested_rrtype = getdns.RRTYPE_A;
                         break;
                     case "AAAA":
@@ -78,7 +75,6 @@ module.exports = function (RED) {
                     case "TXT":
                         requested_rrtype = getdns.RRTYPE_TXT;
                         break;
-
                 }
 
 
@@ -90,8 +86,8 @@ module.exports = function (RED) {
                     // See below for the format of response
 
                     if (err !== null) {
-                        console.log("callback: err");
-                        console.log(err)
+                        //console.log("callback: err");
+                        //console.log(err);
 
                         msg.dnsResponse.type = "Error";
                         msg.dnsResponse.value = "Lookup error";
@@ -99,7 +95,7 @@ module.exports = function (RED) {
                         context.destroy();
                     }
                     else {
-                        console.log("callback: result");
+                        //console.log("callback: result");
 
                         // expecting a single reply, although that may contain multiple records
                         if (result.replies_tree.length != 1) {
@@ -124,12 +120,12 @@ module.exports = function (RED) {
                         for (var i = 0; i < reply.answer.length; i++) {
                             var a = reply.answer[i];
                             if (a.type == getdns.RRTYPE_URI) {
-                                console.log("reply: URI record: " + a.rdata.priority + " " + a.rdata.weight + " \"" + a.rdata.target + "\"");
+                                //console.log("reply: URI record: " + a.rdata.priority + " " + a.rdata.weight + " \"" + a.rdata.target + "\"");
                                 msg.dnsResponse.type = "URI";
                                 msg.dnsResponse.value = a.rdata.target;
                                 node.send(msg);
                             } else if (a.type == getdns.RRTYPE_RRSIG) {
-                                console.log("reply: RRSIG record");
+                                //console.log("reply: RRSIG record");
                             } else {
                                 throw new Error("unexpected record type");
                             }
