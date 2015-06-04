@@ -78,7 +78,8 @@ module.exports = function (RED) {
                 }
 
 
-                context.lookup(requested_name, requested_rrtype, function (err, result) {
+                var transactionId = context.lookup(requested_name, requested_rrtype, function (err, result) {
+                    console.log("Opening "+transactionId)
                     // if not null, err is an object w/ msg and code.
                     // code maps to a GETDNS_CALLBACK_TYPE
                     // result is a response dictionary
@@ -92,7 +93,6 @@ module.exports = function (RED) {
                         msg.dnsResponse.type = "Error";
                         msg.dnsResponse.value = "Lookup error";
                         node.send(msg);
-                        context.destroy();
                     }
                     else {
                         //console.log("callback: result");
@@ -102,7 +102,6 @@ module.exports = function (RED) {
                             msg.dnsResponse.type = "Error";
                             msg.dnsResponse.value = "expected single reply to URI query";
                             node.send(msg);
-                            context.destroy();
                         }
                         var reply = result.replies_tree[0];
 
@@ -111,8 +110,9 @@ module.exports = function (RED) {
                             msg.dnsResponse.type = "Error";
                             msg.dnsResponse.value = "DNSSEC failed";
                             node.send(msg);
+                            console.log("closing "+transactionId)
                             context.destroy();
-
+                            return;
                         }
 
 
@@ -127,13 +127,14 @@ module.exports = function (RED) {
                             } else if (a.type == getdns.RRTYPE_RRSIG) {
                                 //console.log("reply: RRSIG record");
                             } else {
-                                throw new Error("unexpected record type");
+
                             }
                         }
 
-                        context.destroy();
-
                     }
+
+                    console.log("closing "+transactionId)
+                    context.destroy();
                 });
 
 
