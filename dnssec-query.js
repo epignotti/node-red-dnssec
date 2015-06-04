@@ -28,8 +28,6 @@ module.exports = function (RED) {
         this.on("input", function (msg) {
 
 
-            var req = null;
-
             msg.dnsResponse = {};
 
             if (msg.dnsQuery.name && msg.dnsQuery.type) {
