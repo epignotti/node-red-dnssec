@@ -9,7 +9,7 @@
 "type":"git",
 "url":"https://github.com/epignotti/node-red-dnssec/tree/master/"
 },
-"license": "Apache",pwd
+"license": "Apache",
 "keywords": [ "node-red", "dnssec", "dns" ],
 "node-red"      : {
 "nodes"     : {
