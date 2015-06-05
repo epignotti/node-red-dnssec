@@ -32,27 +32,27 @@ module.exports = function (RED) {
             if (msg.dnsQuery.name && msg.dnsQuery.type) {
 
 
-                var timeout = 5000;
+                if (!global.getdnsContext) {
+                    var timeout = 5000;
 
-                if (msg.dnsQuery.timeout) timeout = msg.dnsQuery.timeout;
+                    var options = {
+                        // option for stub resolver context
+                        stub: false,		// for some reason, stub resolution not working on rPi as configured
 
-                var options = {
-                    // option for stub resolver context
-                    stub: false,		// for some reason, stub resolution not working on rPi as configured
+                        // upstream recursive servers
+                        //  upstreams : [ "8.8.8.8" ],
 
-                    // upstream recursive servers
-                    //  upstreams : [ "8.8.8.8" ],
+                        // request timeout time in millis
+                        timeout: timeout,
 
-                    // request timeout time in millis
-                    timeout: timeout,
+                        // always return dnssec status
+                        return_dnssec_status: true
+                    };
 
-                    // always return dnssec status
-                    return_dnssec_status: true
-                };
+                    // create the context with the above options
+                    global.getdnsContext = getdns.createContext(options);
 
-                // create the context with the above options
-                var context = getdns.createContext(options);
-
+                }
 
                 var requested_name = msg.dnsQuery.name;
 
@@ -78,8 +78,8 @@ module.exports = function (RED) {
                 }
 
 
-                var transactionId = context.lookup(requested_name, requested_rrtype, function (err, result) {
-                    console.log("Opening "+transactionId)
+                var transactionId = global.getdnsContext.lookup(requested_name, requested_rrtype, function (err, result) {
+                    //console.log("Opening "+transactionId)
                     // if not null, err is an object w/ msg and code.
                     // code maps to a GETDNS_CALLBACK_TYPE
                     // result is a response dictionary
@@ -110,9 +110,6 @@ module.exports = function (RED) {
                             msg.dnsResponse.type = "Error";
                             msg.dnsResponse.value = "DNSSEC failed";
                             node.send(msg);
-                            console.log("closing "+transactionId)
-                            context.destroy();
-                            return;
                         }
 
 
@@ -133,8 +130,6 @@ module.exports = function (RED) {
 
                     }
 
-                    console.log("closing "+transactionId)
-                    context.destroy();
                 });
 
 
