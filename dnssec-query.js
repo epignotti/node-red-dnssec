@@ -20,27 +20,35 @@ var getdns = require('getdns');
 module.exports = function (RED) {
     "use strict";
 
+    /**
+     * Constructor for the dnssec-query node
+     *
+     * @param config
+     * @constructor
+     */
     function DnssecQueryNode(config) {
 
+        //Create a new node
         RED.nodes.createNode(this, config);
         var node = this;
+
+        // When a input message is received by the node
         this.on("input", function (msg) {
 
-
+            // Create and empty dns response in the output message
             msg.dnsResponse = {};
 
+            // If the dns query exists
+            // TODO: Need to make bette checks in here
             if (msg.dnsQuery.name && msg.dnsQuery.type) {
 
-
+                // Create a dns context if a global one does not exists
                 if (!global.getdnsContext) {
                     var timeout = 5000;
 
                     var options = {
                         // option for stub resolver context
                         stub: false,		// for some reason, stub resolution not working on rPi as configured
-
-                        // upstream recursive servers
-                        //  upstreams : [ "8.8.8.8" ],
 
                         // request timeout time in millis
                         timeout: timeout,
@@ -54,7 +62,8 @@ module.exports = function (RED) {
 
                 }
 
-                var requested_name = msg.dnsQuery.name;
+
+
 
                 var requested_rrtype = null;
 
@@ -78,29 +87,23 @@ module.exports = function (RED) {
                 }
 
 
-                var transactionId = global.getdnsContext.lookup(requested_name, requested_rrtype, function (err, result) {
-                    //console.log("Opening "+transactionId)
+                var transactionId = global.getdnsContext.lookup(msg.dnsQuery.name, requested_rrtype, function (err, result) {
                     // if not null, err is an object w/ msg and code.
                     // code maps to a GETDNS_CALLBACK_TYPE
                     // result is a response dictionary
                     // A third argument is also supplied as the transaction id
                     // See below for the format of response
 
-                    if (err !== null) {
-                        //console.log("callback: err");
-                        //console.log(err);
-
+                    if (err !== null) {;
                         msg.dnsResponse.type = "Error";
                         msg.dnsResponse.value = "Lookup error";
                         node.send(msg);
                     }
                     else {
-                        //console.log("callback: result");
-
                         // expecting a single reply, although that may contain multiple records
                         if (result.replies_tree.length != 1) {
                             msg.dnsResponse.type = "Error";
-                            msg.dnsResponse.value = "expected single reply to URI query";
+                            msg.dnsResponse.value = "Expected single reply to URI query";
                             node.send(msg);
                         }
                         var reply = result.replies_tree[0];
@@ -112,29 +115,24 @@ module.exports = function (RED) {
                             node.send(msg);
                         }
 
-
                         // enumerate output
                         for (var i = 0; i < reply.answer.length; i++) {
                             var a = reply.answer[i];
+                            //TODO: Need to support other types of responses
                             if (a.type == getdns.RRTYPE_URI) {
-                                //console.log("reply: URI record: " + a.rdata.priority + " " + a.rdata.weight + " \"" + a.rdata.target + "\"");
                                 msg.dnsResponse.type = "URI";
                                 msg.dnsResponse.value = a.rdata.target;
                                 node.send(msg);
-                            } else if (a.type == getdns.RRTYPE_RRSIG) {
-                                //console.log("reply: RRSIG record");
-                            } else {
-
                             }
                         }
-
                     }
-
                 });
-
-
             }
         });
+
+
+        //TODO: destroy the global variable holding the dns context when node-red exists
+
     }
 
     RED.nodes.registerType("dnssec-query", DnssecQueryNode);
