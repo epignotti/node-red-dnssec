@@ -105,24 +105,26 @@ module.exports = function (RED) {
                             msg.dnsResponse.type = "Error";
                             msg.dnsResponse.value = "Expected single reply to URI query";
                             node.send(msg);
-                        }
-                        var reply = result.replies_tree[0];
+                        } else {
+                            var reply = result.replies_tree[0];
 
-                        // check DNSSEC
-                        if (reply.dnssec_status != getdns.DNSSEC_SECURE) {
-                            msg.dnsResponse.type = "Error";
-                            msg.dnsResponse.value = "DNSSEC failed";
-                            node.send(msg);
-                        }
-
-                        // enumerate output
-                        for (var i = 0; i < reply.answer.length; i++) {
-                            var a = reply.answer[i];
-                            //TODO: Need to support other types of responses
-                            if (a.type == getdns.RRTYPE_URI) {
-                                msg.dnsResponse.type = "URI";
-                                msg.dnsResponse.value = a.rdata.target;
+                            // check DNSSEC
+                            if (reply.dnssec_status != getdns.DNSSEC_SECURE) {
+                                msg.dnsResponse.type = "Error";
+                                msg.dnsResponse.value = "DNSSEC failed";
                                 node.send(msg);
+                            } else {
+
+                                // enumerate output
+                                for (var i = 0; i < reply.answer.length; i++) {
+                                    var a = reply.answer[i];
+                                    //TODO: Need to support other types of responses
+                                    if (a.type == getdns.RRTYPE_URI) {
+                                        msg.dnsResponse.type = "URI";
+                                        msg.dnsResponse.value = a.rdata.target;
+                                        node.send(msg);
+                                    }
+                                }
                             }
                         }
                     }
